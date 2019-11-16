@@ -3,8 +3,8 @@ title: "Parking_JFK"
 author: "Christopher Eshleman"
 date: "5/25/2019"
 output:
-  pdf_document: default
   word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 # Aiport Parking at JFK
 
 ```{r, include=FALSE, echo=FALSE}
-
 library(leaps) 
 library(zoo) 
 library(olsrr) 
@@ -23,8 +22,9 @@ library(lubridate)
 library(ISLR) 
 library(broom) 
 
-oldw = getOption("warn")
-options(warn = -1)
+rm(list = ls()) # clear global environment 
+cat("\014") # clear the console 
+options(warn=-1) # suppress annoying warnings 
 
 
 setwd("~/Dropbox/Work and research/Port Authority/airport_parking")
@@ -54,7 +54,20 @@ cd$quarter = paste(year(cd$month),cd$quarter,sep="-")
 cd$m = NULL 
 cd$q = NULL 
 cd$yr = NULL 
+```
 
+I imported (a) average domestic ticket prices, (b-c) JFK and EWR parking data, and (d) consumer spending data. 
+
+Ticket prices are quarterly. They're averages and include US, JFK, LaGuardia and Newark. 
+
+Airport parking data is monthly. It includes paid parking activity, revenue, and a count of enplanments (boardings) split by domestic and international for each month. The JFK data also includes data points on "cell service" and AirTrain use. 
+
+The consumer spending data is monthly. It covers regional spending on goods and services sliced into a number of increasingly smaller tranches — 415 variables in total, including total personal consumption. No NAICS codes, however. 
+
+A first stop may be to try and collapse the data for one of the airports - I'll use JFK as a start. Calculate a placeholder people par parking decision in order to marry enplanements to parking and simulate a non-parking variable, and then try and predict the parking-no parking decision using a handful of factors. 
+
+
+```{r}
 cd = aggregate(. ~ quarter, cd, FUN = mean, na.action=na.pass) 
 cd$q = seq(as.Date("2006/1/1"), as.Date("2019/1/1"), by = "quarter")
 cd = subset(cd,cd$q<"2018-04-01") 
@@ -74,6 +87,7 @@ cdd = aggregate(. ~ quarter, cdd, FUN = mean, na.action=na.pass)
 cdd$q = seq(as.Date("2006/1/1"), as.Date("2019/1/1"), by = "quarter")
 cdd = subset(cdd,cdd$q<"2018-04-01") 
 ```
+
 
 Remove things with too many blanks (NAs) and factor variables. 
 
@@ -137,3 +151,8 @@ Stepwise guidance suggests sticking with international emplanements and goods, a
 #time = auto.arima(ts(Put Y here),xreg=(put matrix of covariates here), ic="aic", trace=TRUE, allowdrift=FALSE)#,lambda=0, seasonal=TRUE)# 
 #summary(fit) 
 ```
+
+```{r}
+options(warn=0) # turn annoying warnings back on
+```
+
